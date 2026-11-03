@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+keys/
+contracts/**/target/
+.DS_Store
+_old/
+.data/
