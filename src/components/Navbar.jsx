@@ -2,6 +2,7 @@ import React from 'react';
 import { GhostIcon } from './Mascot';
 
 export const APP_TABS = [
+  { id: 'rob', label: 'Rob it' },
   { id: 'inbox', label: 'Inbox' },
   { id: 'lab', label: 'Attack lab' },
   { id: 'agent', label: 'Agent' },

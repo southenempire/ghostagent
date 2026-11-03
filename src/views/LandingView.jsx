@@ -1,7 +1,7 @@
 import React from 'react';
 import { HeroMascotEmblem, MascotGhost } from '../components/Mascot';
 
-export function LandingView({ onLaunchApp }) {
+export function LandingView({ onLaunchApp, onRob }) {
   return (
     <div className="crop-marks" style={{ maxWidth: '1440px', margin: '0 auto' }}>
       
@@ -42,7 +42,7 @@ export function LandingView({ onLaunchApp }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
             <span style={{ color: '#FF4B1F', fontSize: '15px' }}>✦</span>
             <div className="mono-label" style={{ color: 'var(--ink)' }}>
-              A FIREWALL BETWEEN AI AGENTS AND MONEY
+              AN ACCOUNTS-PAYABLE AGENT THAT CAN'T BE SCAMMED
             </div>
             <span style={{ color: '#FF4B1F', fontSize: '15px' }}>✦</span>
           </div>
@@ -56,9 +56,9 @@ export function LandingView({ onLaunchApp }) {
               marginBottom: '32px'
             }}
           >
-            Jailbreak the agent.<br />
+            An AI that pays your invoices.<br />
             <span style={{ fontStyle: 'italic', position: 'relative' }}>
-              The money stays put.
+              Try to rob it.
               <span 
                 style={{ 
                   position: 'absolute', 
@@ -81,26 +81,27 @@ export function LandingView({ onLaunchApp }) {
               marginBottom: '40px' 
             }}
           >
-            GhostAgent lets an AI agent pay your invoices from a NEAR vault. Every payment needs a decision signed
-            inside NEAR AI's TEE, and the vault contract checks that signature, your vendor list and your budget
-            on-chain. A poisoned invoice, a stolen key or a fully jailbroken model all hit the same wall.
+            GhostAgent reads vendor invoices and pays them from a NEAR vault. The oldest scam in accounts payable,
+            "our bank details changed, pay this new account", works on people and on models. Here it can't: every
+            payment needs a decision signed inside NEAR AI's TEE, and the vault contract checks that signature, your
+            vendor list and your budget on-chain. A poisoned invoice, a stolen key or a jailbroken model all hit the same wall.
           </p>
 
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
             <button 
-              onClick={onLaunchApp}
+              onClick={onRob}
               className="ghost-btn ghost-btn-primary" 
               style={{ minHeight: '52px', padding: '0 28px', fontSize: '16px', fontWeight: 600 }}
             >
-              Launch app <span>→</span>
+              Try to rob it <span>→</span>
             </button>
-            <a 
-              href="#guardrails" 
+            <button 
+              onClick={onLaunchApp}
               className="ghost-btn" 
               style={{ minHeight: '52px', padding: '0 24px', fontSize: '16px' }}
             >
-              See the attacks <span>↓</span>
-            </a>
+              Launch app <span>→</span>
+            </button>
 
             {/* Clean Status Badge without any overlapping collisions */}
             <div 
@@ -378,7 +379,7 @@ export function LandingView({ onLaunchApp }) {
         </div>
         <div>
           <button 
-            onClick={onLaunchApp}
+            onClick={onRob}
             className="ghost-btn" 
             style={{ 
               background: '#111110', 
@@ -390,7 +391,7 @@ export function LandingView({ onLaunchApp }) {
               fontWeight: 700
             }}
           >
-            Launch app <span>→</span>
+            Try to rob it <span>→</span>
           </button>
         </div>
       </section>

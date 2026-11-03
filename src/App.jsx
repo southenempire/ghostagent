@@ -5,6 +5,7 @@ import { InboxView } from './views/InboxView';
 import { AttackLabView } from './views/AttackLabView';
 import { VaultView } from './views/VaultView';
 import { AgentTeeView } from './views/AgentTeeView';
+import { RobView } from './views/RobView';
 import { KillswitchModal } from './components/KillswitchModal';
 import { useGhostVault, toNear, explorerTx } from './lib/useGhostVault';
 import { useWallet } from './lib/useWallet';
@@ -58,7 +59,8 @@ export default function App() {
       />
 
       <main style={{ flex: 1 }}>
-        {currentTab === 'landing' && <LandingView onLaunchApp={() => setCurrentTab('inbox')} />}
+        {currentTab === 'landing' && <LandingView onLaunchApp={() => setCurrentTab('inbox')} onRob={() => setCurrentTab('rob')} />}
+        {currentTab === 'rob' && <RobView vault={vault} />}
         {currentTab === 'inbox' && <InboxView vault={vault} onOpenKillswitch={openKillswitch} onSelectTab={setCurrentTab} />}
         {currentTab === 'lab' && <AttackLabView vault={vault} />}
         {currentTab === 'agent' && <AgentTeeView vault={vault} />}

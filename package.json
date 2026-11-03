@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "start": "node server.js",
     "contract:test": "cd contracts/ghostvault && cargo test",
     "contract:build": "cd contracts/ghostvault && RUSTFLAGS=\"--cfg near\" cargo build --target wasm32-unknown-unknown --release && npx -y -p binaryen@123.0.0 wasm-opt -Oz --strip-debug --enable-bulk-memory --enable-sign-ext --enable-mutable-globals --enable-nontrapping-float-to-int target/wasm32-unknown-unknown/release/ghostvault.wasm -o target/ghostvault.opt.wasm",
     "setup": "node scripts/setup_vault.js",
@@ -32,5 +32,8 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.7"
+  },
+  "engines": {
+    "node": ">=20.12"
   }
 }

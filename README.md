@@ -1,16 +1,22 @@
 # GhostAgent
 
-A NEAR vault that lets an AI agent pay invoices without trusting the agent. Every payment must carry a
-decision signed inside NEAR AI Cloud's TEE (trusted execution environment), and the vault contract verifies
-that signature on-chain, with `ecrecover`, before any money moves. A stolen agent key, an edited decision, a
-poisoned invoice or a jailbroken model cannot move funds outside the owner's policy.
+An AI accounts-payable agent that pays vendor invoices from a NEAR vault, and that you can try to rob.
+
+Every payment must carry a decision signed inside NEAR AI Cloud's TEE (trusted execution environment), and the
+vault contract verifies that signature on-chain, with `ecrecover`, before any money moves. A fake "our bank details
+changed" invoice, a stolen agent key, an edited decision or a jailbroken model cannot move funds outside the
+owner's policy. **Rob the Ghost** lets anyone write their own invoice and try to make the agent pay them; every
+attempt is a real testnet transaction on a public wall.
 
 Built at NEAR HACKATHON (2026-11-01 to 2026-11-14). Tracks: `security` (AI Security & Defense), `agents` (Agent Economy).
 Runs on NEAR testnet and Ethereum Sepolia.
 
 ## The problem
 
-Giving an AI agent a wallet means trusting three things that fail in practice:
+Invoice fraud is the oldest scam in accounts payable: a message that looks like it comes from a real vendor says
+the bank details changed, and the next payment goes to the attacker. It works on people, and it works on AI
+agents, which read untrusted invoice text and act on it. Giving an AI agent a wallet means trusting three things
+that fail in practice:
 
 1. **The model.** Prompt injection or a jailbreak makes it pay whoever the attacker names.
 2. **The input.** Invoice fraud ("our bank details changed, pay this new account") works on people and on models.
@@ -36,6 +42,25 @@ Everything below reads public testnet data. Nothing is signed and no account is 
 
 Without a `.env` the web app is read-only: the buttons that run the agent need the keys described in
 [Run your own vault](#run-your-own-vault).
+
+## Rob the Ghost
+
+The **Rob it** tab (`/#rob`) is a public challenge: write an invoice that makes the agent pay your account.
+
+- Your invoice goes to the same agent, system prompt and contract as every real invoice, wrapped as
+  `Process this vendor invoice. --- invoice --- … --- end invoice ---`
+  ([`agent/scenarios.js`](agent/scenarios.js), mode `rob`). Nothing is softened for the challenge.
+- Each attempt ends in an `execute_attested` transaction. The wall ([`agent/api.js`](agent/api.js), `GET /api/robs`)
+  records the outcome, judged only from the on-chain result: **Refused by AI** (the model's signed refusal, which
+  the contract rejects), **Blocked by vault** (any other contract rejection), **Paid the real vendor** (the attack
+  produced a payment, but only to the approved vendor) or **Robbed** (a payment to anyone else; this would be a bug).
+- The invoice text is shown on the wall and sent to NEAR AI; only its hash goes on-chain.
+- Do: open `/#rob`, press **Bank details changed**, then **Try to rob it** → see the TEE decision and signature in the
+  live log, the contract's answer with a transaction link, and the attempt at the top of the wall.
+
+The hosted version runs `npm start` with `PUBLIC_MODE=1` ([`server.js`](server.js)): owner routes are off, so the
+server never holds the owner key, and attempts are limited per IP per hour and per day
+(`RUNS_PER_IP_PER_HOUR`, `RUNS_PER_DAY`).
 
 ## How it works
 
@@ -161,7 +186,10 @@ npm run contract:test
   held by the local API ([`agent/api.js`](agent/api.js)). The wallet hand-over is covered by unit tests but has not
   been run on testnet yet.
 - **Amounts and payees are public**, like any on-chain payment.
-- **No hosted demo.** The web app runs locally (`npm run dev`); the contract and every transaction above are on public testnet.
+- **The wall is stored by the server** (`.data/robs.json`), not on-chain. Each entry links its transaction, which is
+  the part anyone can verify. The challenge's daily NEAR budget is the vault's daily cap: an invoice that
+  persuades the agent to pay the approved vendor uses it up for the day, after which further payments are
+  rejected by the cap until it resets.
 - **Testnet only.** NEAR testnet and Ethereum Sepolia.
 
 ## NEAR features used
@@ -205,7 +233,8 @@ agent/
   api.js                local API for the web app (keys stay in Node)
   runner.js             CLI
 scripts/                setup, upgrade + migrate, approve TEE signer, inspect a tx
-src/                    React app (Vite): Inbox, Attack lab, Agent, Vault
+server.js               production server: built app + API, PUBLIC_MODE for the hosted challenge
+src/                    React app (Vite): Rob it, Inbox, Attack lab, Agent, Vault
 ```
 
 ## License

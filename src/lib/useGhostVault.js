@@ -92,18 +92,18 @@ export function useGhostVault(wallet) {
     return () => clearInterval(timer);
   }, [refresh]);
 
-  /** Streams a scenario's events into `logs`; resolves with the final result event. */
-  const runScenario = useCallback(async (mode, task) => {
+  /** Streams a run's events into `logs`; resolves with the final result event. */
+  const stream = useCallback(async (label, path, body) => {
     if (running) return null;
-    setRunning(mode);
+    setRunning(label);
     setStep('plan');
-    setLogs((prev) => [...prev, { tag: 'RUN', level: 'head', msg: `── ${mode} ──`, at: new Date().toISOString() }]);
+    setLogs((prev) => [...prev, { tag: 'RUN', level: 'head', msg: `── ${label} ──`, at: new Date().toISOString() }]);
     let result = null;
     try {
-      const res = await fetch('/api/run', {
+      const res = await fetch(`/api${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, task }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       const reader = res.body.getReader();
@@ -131,6 +131,10 @@ export function useGhostVault(wallet) {
     }
     return result;
   }, [running, refresh]);
+
+  const runScenario = useCallback((mode, task) => stream(mode, '/run', { mode, task }), [stream]);
+  /** "Rob the Ghost": a visitor's own invoice, recorded on the public wall */
+  const rob = useCallback((invoice, name) => stream('rob', '/rob', { invoice, name }), [stream]);
 
   /**
    * Owner actions are signed by whoever owns the vault on-chain: the connected wallet when it is the
@@ -168,5 +172,5 @@ export function useGhostVault(wallet) {
     return result;
   }, [refresh, state?.owner_id, wallet]);
 
-  return { config, state, executions, runs, logs, step, running, error, refresh, runScenario, ownerAction };
+  return { config, state, executions, runs, logs, step, running, error, refresh, runScenario, rob, ownerAction };
 }
