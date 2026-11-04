@@ -210,7 +210,7 @@ npm run contract:test
 | Agent and scripts | `near-api-js` 7.3, `@noble/curves` and `@noble/hashes` 2.2, Node 22 |
 | Web app | React 19, Vite 6, `@hot-labs/near-connect` 0.11, `lucide-react` |
 | AI model at runtime | `Qwen/Qwen3.6-35B-A3B-FP8` on NEAR AI Cloud (TEE) |
-| AI coding tool | Claude Code (Anthropic) wrote most of the code with the author |
+| AI coding tools | Claude Code (Anthropic) and Antigravity (Google) wrote most of the code with the author |
 | RPC | FastNEAR testnet RPC, publicnode Sepolia RPC |
 
 ## Hackathon notes
