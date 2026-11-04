@@ -11,6 +11,8 @@ attempt is a real testnet transaction on a public wall.
 Built at NEAR HACKATHON (2026-11-01 to 2026-11-14). Tracks: `security` (AI Security & Defense), `agents` (Agent Economy).
 Runs on NEAR testnet and Ethereum Sepolia.
 
+**Live demo:** https://ghostagent-production.up.railway.app/#rob (public mode: owner actions off, rate-limited, online through 2026-11-25)
+
 ## The problem
 
 Invoice fraud is the oldest scam in accounts payable: a message that looks like it comes from a real vendor says
@@ -27,10 +29,11 @@ and the contract re-checks that decision against the owner's rules. The key alon
 
 ## Try it in 5 minutes, no keys needed
 
-Everything below reads public testnet data. Nothing is signed and no account is needed.
+No account or keys needed. The live demo runs the agent on our server (one testnet transaction per attempt); every other row only reads public testnet data.
 
 | Do | See |
 |---|---|
+| Open the [live demo](https://ghostagent-production.up.railway.app/#rob), press **Bank details changed**, then **Try to rob it** | the TEE decision streaming in, the vault's on-chain answer with a transaction link, and your attempt on the wall |
 | Open the vault on the explorer: [vault.ghostagent-vault-01.testnet](https://testnet.nearblocks.io/address/vault.ghostagent-vault-01.testnet) | a deployed contract, its transactions, and the agent's function-call key |
 | Open the [jailbreak attempt](https://testnet.nearblocks.io/txns/5jFmMmMmJPsW3hbFKiVbfvfYQPSvCwGwFgaxiHa7Wz6R) | the transaction failed with `POLICY: payee attacker.testnet is not on the owner's approved list` |
 | Open the [paid invoice](https://testnet.nearblocks.io/txns/yuPhCG25LKQEmC3VJ2MaAj2BcSHyA7UxCbXTzD8ZnP9) | `execute_attested` succeeded and 0.05 NEAR went to `data-api.ghostagent-vault-01.testnet` |

@@ -1,0 +1,11 @@
+# Never upload secrets or local state to Railway
+.env
+.env.*
+!.env.example
+keys/
+_old/
+.data/
+node_modules/
+dist/
+contracts/**/target/
+.claude/

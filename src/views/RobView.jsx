@@ -52,14 +52,19 @@ export function RobView({ vault }) {
   const [openId, setOpenId] = useState(null);
 
   const loadWall = useCallback(() => {
-    if (document.visibilityState === 'hidden') return;
     fetch('/api/robs').then((r) => r.json()).then(setWall).catch(() => {});
   }, []);
 
+  // Load once even in a background tab; only the polling pauses while hidden
   useEffect(() => {
     loadWall();
-    const timer = setInterval(loadWall, WALL_POLL_MS);
-    return () => clearInterval(timer);
+    const poll = () => document.visibilityState === 'visible' && loadWall();
+    const timer = setInterval(poll, WALL_POLL_MS);
+    document.addEventListener('visibilitychange', poll);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', poll);
+    };
   }, [loadWall]);
 
   const applyTactic = (t) => setText(looksLikeAccount(name.trim()) ? t.text.replaceAll('your-account.testnet', name.trim()) : t.text);

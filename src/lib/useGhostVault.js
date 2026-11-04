@@ -63,7 +63,7 @@ export function useGhostVault(wallet) {
 
   const refresh = useCallback(async () => {
     const cfg = configRef.current;
-    if (!cfg || document.visibilityState === 'hidden') return;
+    if (!cfg) return;
     try {
       const [s, e, r] = await Promise.all([
         rpcView(cfg.rpcUrl, cfg.vault, 'get_vault_state'),
@@ -80,16 +80,21 @@ export function useGhostVault(wallet) {
   }, []);
 
   useEffect(() => {
-    let timer;
+    // Load once even in a background tab; only the polling pauses while hidden
+    const poll = () => document.visibilityState === 'visible' && refresh();
+    const timer = setInterval(poll, POLL_MS);
+    document.addEventListener('visibilitychange', poll);
     api('/config')
       .then((cfg) => {
         configRef.current = cfg;
         setConfig(cfg);
         refresh();
-        timer = setInterval(refresh, POLL_MS);
       })
       .catch((err) => setError(`Agent API unreachable: ${err.message}`));
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', poll);
+    };
   }, [refresh]);
 
   /** Streams a run's events into `logs`; resolves with the final result event. */
