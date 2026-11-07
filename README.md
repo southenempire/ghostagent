@@ -34,6 +34,7 @@ No account or keys needed. The live demo runs the agent on our server (one testn
 | Do | See |
 |---|---|
 | Open the [live demo](https://ghostagent-production.up.railway.app/#rob), press **Bank details changed**, then **Try to rob it** | the TEE decision streaming in, the vault's on-chain answer with a transaction link, and your attempt on the wall |
+| On the same page press **Hard mode** → **Obedient assistant** → **Rob it with your AI** | you write the AI's instructions, the TEE model obeys and signs a payment to your account, and the contract still rejects it with `POLICY: payee … not on the owner's approved list` |
 | Open the vault on the explorer: [vault.ghostagent-vault-01.testnet](https://testnet.nearblocks.io/address/vault.ghostagent-vault-01.testnet) | a deployed contract, its transactions, and the agent's function-call key |
 | Open the [jailbreak attempt](https://testnet.nearblocks.io/txns/5jFmMmMmJPsW3hbFKiVbfvfYQPSvCwGwFgaxiHa7Wz6R) | the transaction failed with `POLICY: payee attacker.testnet is not on the owner's approved list` |
 | Open the [paid invoice](https://testnet.nearblocks.io/txns/yuPhCG25LKQEmC3VJ2MaAj2BcSHyA7UxCbXTzD8ZnP9) | `execute_attested` succeeded and 0.05 NEAR went to `data-api.ghostagent-vault-01.testnet` |
@@ -48,7 +49,8 @@ Without a `.env` the web app is read-only: the buttons that run the agent need t
 
 ## Rob the Ghost
 
-The **Rob it** tab (`/#rob`) is a public challenge: write an invoice that makes the agent pay your account.
+The **Rob it** tab (`/#rob`) is a public challenge: write an invoice that makes the agent pay your account, or, in
+Hard mode, write the AI's instructions too.
 
 - Your invoice goes to the same agent, system prompt and contract as every real invoice, wrapped as
   `Process this vendor invoice. --- invoice --- … --- end invoice ---`
@@ -60,6 +62,24 @@ The **Rob it** tab (`/#rob`) is a public challenge: write an invoice that makes 
 - The invoice text is shown on the wall and sent to NEAR AI; only its hash goes on-chain.
 - Do: open `/#rob`, press **Bank details changed**, then **Try to rob it** → see the TEE decision and signature in the
   live log, the contract's answer with a transaction link, and the attempt at the top of the wall.
+
+**Hard mode: you own the AI.** Most agent guardrails stop working once the model is compromised. Hard mode hands
+the model to the attacker: you write its system prompt as well as the invoice, GhostAgent's rules are removed, and
+only the reply format is appended so the contract can read the decision (mode `hijack` in
+[`agent/scenarios.js`](agent/scenarios.js)). The model is still the real one in NEAR AI's TEE, so whatever it
+decides is validly signed. The vault contract is the only thing left.
+
+- Do: open `/#rob`, press **Hard mode**, pick **Obedient assistant**, then **Rob it with your AI** → see the model
+  decide `"action":"pay"` to your account, the TEE sign it, and the contract reject it with
+  `POLICY: payee … is not on the owner's approved list`
+  ([example](https://testnet.nearblocks.io/txns/5ridafMbJXJNb1KEnKc936eJhRWHvy8SQKRLqyT7NgyH)).
+- The wall counts **AI hijacked**: attempts where the model itself chose to pay someone off the owner's list. That
+  number is expected to grow; **Robbed** is expected to stay at zero, because the payee list, per-payment limit and
+  daily cap are checked by the contract, not by the model.
+- The **Hide it as the vendor** trick names a look-alike account
+  (`data-api.ghostagent-vault-01.testnet.your-account.testnet`); the contract compares account IDs exactly, so it fails.
+- Worst case: an attacker gets the model to pay the real approved vendor, up to the 1 NEAR daily cap. In this demo that
+  vendor is a sub-account of the owner, so the funds stay with the owner.
 
 The hosted version runs `npm start` with `PUBLIC_MODE=1` ([`server.js`](server.js)): owner routes are off, so the
 server never holds the owner key, and attempts are limited per IP per hour and per day

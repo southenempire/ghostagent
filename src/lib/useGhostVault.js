@@ -139,7 +139,7 @@ export function useGhostVault(wallet) {
 
   const runScenario = useCallback((mode, task) => stream(mode, '/run', { mode, task }), [stream]);
   /** "Rob the Ghost": a visitor's own invoice, recorded on the public wall */
-  const rob = useCallback((invoice, name) => stream('rob', '/rob', { invoice, name }), [stream]);
+  const rob = useCallback((invoice, name, system) => stream('rob', '/rob', { invoice, name, system }), [stream]);
 
   /**
    * Owner actions are signed by whoever owns the vault on-chain: the connected wallet when it is the

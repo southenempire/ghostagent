@@ -7,7 +7,8 @@
  *   POST /api/run             {mode, task?} → newline-delimited JSON events, last one {type:'result'};
  *                             task is the invoice text (kept in the local run log, never sent on-chain)
  *   GET  /api/runs            recent runs, including rejected attacks (which leave no vault record)
- *   POST /api/rob             {invoice, name?} "Rob the Ghost": a visitor's invoice, streamed like /run
+ *   POST /api/rob             {invoice, name?, system?} "Rob the Ghost": a visitor's invoice, streamed like /run;
+ *                             with `system` (hard mode) the visitor also writes the model's instructions
  *   GET  /api/robs            the public wall: every robbery attempt and its on-chain outcome
  *   GET  /api/attestation     NEAR AI attestation summary for the model's TEE signer
  *   GET  /api/evm             the vault's Sepolia address (chain signatures) and balance
@@ -110,7 +111,7 @@ function rateLimit(req) {
 }
 
 /** Streams one scenario as NDJSON and returns the finished run record. */
-async function streamRun(res, mode, task) {
+async function streamRun(res, mode, task, system) {
   busy = true;
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/x-ndjson');
@@ -126,7 +127,7 @@ async function streamRun(res, mode, task) {
   };
 
   try {
-    const result = await runScenario(mode, { task, emit });
+    const result = await runScenario(mode, { task, system, emit });
     Object.assign(run, { ok: result.ok, hash: result.hash, url: result.url, error: result.error, evm: result.evm });
   } catch (err) {
     emit({ type: 'log', tag: 'ERROR', level: 'err', msg: err.message });
@@ -140,7 +141,7 @@ async function streamRun(res, mode, task) {
 
 async function handleRun(req, res) {
   const { mode = 'run', task } = await readBody(req);
-  if (!SCENARIOS.includes(mode) || mode === 'rob') return json(res, 400, { error: `Unknown scenario '${mode}'` });
+  if (!SCENARIOS.includes(mode) || mode === 'rob' || mode === 'hijack') return json(res, 400, { error: `Unknown scenario '${mode}'` });
   if (task !== undefined && (typeof task !== 'string' || task.length > MAX_TASK_CHARS)) {
     return json(res, 400, { error: `Invoice text must be under ${MAX_TASK_CHARS} characters` });
   }
@@ -162,20 +163,27 @@ function robOutcome(run) {
 }
 
 async function handleRob(req, res) {
-  const { invoice, name } = await readBody(req);
-  if (typeof invoice !== 'string' || !invoice.trim()) return json(res, 400, { error: 'Write an invoice first' });
-  if (invoice.length > MAX_ROB_CHARS) return json(res, 400, { error: `Keep it under ${MAX_ROB_CHARS} characters` });
+  const { invoice = '', name, system } = await readBody(req);
+  const hard = system !== undefined;
+  if (typeof invoice !== 'string' || (!hard && !invoice.trim())) return json(res, 400, { error: 'Write an invoice first' });
+  if (hard && (typeof system !== 'string' || !system.trim())) return json(res, 400, { error: 'Write the AI\'s instructions first' });
+  if (invoice.length > MAX_ROB_CHARS || (hard && system.length > MAX_ROB_CHARS)) {
+    return json(res, 400, { error: `Keep each box under ${MAX_ROB_CHARS} characters` });
+  }
   if (busy) return json(res, 409, { error: 'Someone else is robbing the ghost right now. Try again in a few seconds.' });
   const limited = rateLimit(req);
   if (limited) return json(res, 429, { error: limited });
 
-  const run = await streamRun(res, 'rob', invoice);
+  const run = await streamRun(res, hard ? 'hijack' : 'rob', invoice, system);
   const attempt = {
     id: run.id,
     at: run.startedAt,
     name: String(name ?? '').replace(/[^\w .@-]/g, '').trim().slice(0, 32) || 'anonymous',
     invoice: invoice.trim(),
+    system: hard ? system.trim() : null,
     outcome: robOutcome(run),
+    // The model itself chose to pay someone off the owner's list: the AI was turned, whatever the vault did next
+    hijacked: run.decision?.action === 'pay' && run.decision.payee !== CONFIG.payeeAccount,
     plan: run.decision ?? null,
     error: run.error ?? null,
     hash: run.hash ?? null,
@@ -186,8 +194,11 @@ async function handleRob(req, res) {
 
 function robWall() {
   const attempts = readJson(ROBS_FILE);
-  const stats = { attempts: attempts.length, refused: 0, blocked: 0, vendor: 0, robbed: 0, error: 0 };
-  for (const a of attempts) stats[a.outcome] += 1;
+  const stats = { attempts: attempts.length, hijacked: 0, refused: 0, blocked: 0, vendor: 0, robbed: 0, error: 0 };
+  for (const a of attempts) {
+    stats[a.outcome] += 1;
+    if (a.hijacked) stats.hijacked += 1;
+  }
   return { stats, attempts: attempts.slice(0, 100) };
 }
 
