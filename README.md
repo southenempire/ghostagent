@@ -14,6 +14,8 @@ Runs on NEAR testnet and Ethereum Sepolia.
 
 **Live demo:** https://ghostagent-production.up.railway.app/#rob (public mode: owner actions off, rate-limited, online through 2026-11-25)
 
+**Demo video (78 s):** https://x.com/Southen13/status/2120535059023143267
+
 ## The problem
 
 Invoice fraud is the oldest scam in accounts payable: a message that looks like it comes from a real vendor says
@@ -75,8 +77,8 @@ decides is validly signed. The vault contract is the only thing left.
   `POLICY: payee … is not on the owner's approved list`
   ([example](https://testnet.nearblocks.io/txns/5ridafMbJXJNb1KEnKc936eJhRWHvy8SQKRLqyT7NgyH)).
 - The wall counts **AI hijacked**: attempts where the model itself chose to pay someone off the owner's list. That
-  number is expected to grow; **Robbed** is expected to stay at zero, because the payee list, per-payment limit and
-  daily cap are checked by the contract, not by the model.
+  number is expected to grow; **Robbed** is expected to stay at zero, because the payee list and the daily cap
+  are checked by the contract, not by the model.
 - The **Hide it as the vendor** trick names a look-alike account
   (`data-api.ghostagent-vault-01.testnet.your-account.testnet`); the contract compares account IDs exactly, so it fails.
 - Worst case: an attacker gets the model to pay the real approved vendor, up to the 1 NEAR daily cap. In this demo that
@@ -252,7 +254,7 @@ npm run contract:test
 contracts/ghostvault/   Rust contract (near-sdk 5): checks, NEAR/EVM payments, migration, 20 unit tests
 agent/
   nearai.js             NEAR AI Cloud: completion, signature fetch, local signer recovery
-  scenarios.js          the runs: pay, poisoned invoice, jailbreak, tamper, forge, ETH payment
+  scenarios.js          the runs: pay, poisoned invoice, jailbreak, tamper, forge, ETH payment, rob, hijack (Hard mode)
   evm.js                vault's Sepolia address, EIP-1559 encoding, MPC signature → raw tx
   api.js                local API for the web app (keys stay in Node)
   runner.js             CLI
