@@ -8,7 +8,8 @@ changed" invoice, a stolen agent key, an edited decision or a jailbroken model c
 owner's policy. **Rob the Ghost** lets anyone write their own invoice and try to make the agent pay them; every
 attempt is a real testnet transaction on a public wall.
 
-Built at NEAR HACKATHON (2026-11-01 to 2026-11-14). Tracks: `security` (AI Security & Defense), `agents` (Agent Economy).
+Built at NEAR HACKATHON (2026-11-01 to 2026-11-14). Tracks: `security` (AI Security & Defense), `agents` (Agent Economy),
+`realworld` (Real-World Money: the agent pays vendor invoices; it pays in NEAR and in ETH through Chain Signatures, not in stablecoins).
 Runs on NEAR testnet and Ethereum Sepolia.
 
 **Live demo:** https://ghostagent-production.up.railway.app/#rob (public mode: owner actions off, rate-limited, online through 2026-11-25)
